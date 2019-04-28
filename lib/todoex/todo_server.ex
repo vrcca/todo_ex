@@ -1,5 +1,6 @@
 defmodule TodoEx.TodoServer do
-  alias TodoEx.TodoList
+  alias TodoEx.{TodoList, ServerProcess}
+  require Logger
 
   @me __MODULE__
 
@@ -10,21 +11,20 @@ defmodule TodoEx.TodoServer do
     }
   end
 
+  def init() do
+    %TodoList{}
+  end
+
   def start_link(_opts) do
     {:ok, start()}
   end
 
   def start() do
-    spawn(fn -> loop(TodoList.new()) end)
+    ServerProcess.start(@me)
   end
 
-  defp loop(todo_list) do
-    new_todo_list =
-      receive do
-        message -> process_message(todo_list, message)
-      end
-
-    loop(new_todo_list)
+  def handle_call(request, todo_list) do
+    {:ok, process_message(todo_list, request)}
   end
 
   defp process_message(todo_list, {:add_entry, new_entry}) do
@@ -44,20 +44,25 @@ defmodule TodoEx.TodoServer do
     todo_list
   end
 
+  defp process_message(todo_list, unknown_message) do
+    Logger.warn("There is no handler for message: #{unknown_message}!")
+    todo_list
+  end
+
   # Client methods
   def add_entry(server, new_entry = %{}) do
-    send(server, {:add_entry, new_entry})
+    ServerProcess.call(server, {:add_entry, new_entry})
   end
 
   def update_entry(server, entry = %{}) do
-    send(server, {:update_entry, entry})
+    ServerProcess.call(server, {:update_entry, entry})
   end
 
   def delete_entry(server, id) do
-    send(server, {:delete_entry, id})
+    ServerProcess.call(server, {:delete_entry, id})
   end
 
   def entries(server, date) do
-    send(server, {:entries, self(), date})
+    ServerProcess.call(server, {:entries, self(), date})
   end
 end
