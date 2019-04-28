@@ -1,34 +1,23 @@
 defmodule TodoEx.TodoServer do
-  alias TodoEx.{TodoList, ServerProcess}
+  alias TodoEx.{TodoList}
   require Logger
+  use GenServer
 
-  @me __MODULE__
-
-  def child_spec(opts) do
-    %{
-      id: @me,
-      start: {@me, :start_link, [opts]}
-    }
+  def start_link(opts) do
+    GenServer.start(__MODULE__, opts)
   end
 
-  def init() do
-    %TodoList{}
-  end
-
-  def start_link(_opts) do
-    {:ok, start()}
-  end
-
-  def start() do
-    ServerProcess.start(@me)
+  def init(_opts) do
+    {:ok, %TodoList{}}
   end
 
   def handle_cast(request, todo_list) do
-    process_message(todo_list, request)
+    {:noreply, process_message(todo_list, request)}
   end
 
-  def handle_call(request, todo_list) do
-    {:ok, process_message(todo_list, request)}
+  def handle_call(request, _from, todo_list) do
+    new_state = process_message(todo_list, request)
+    {:reply, new_state, new_state}
   end
 
   defp process_message(todo_list, {:add_entry, new_entry}) do
@@ -55,18 +44,18 @@ defmodule TodoEx.TodoServer do
 
   # Client methods
   def add_entry(server, new_entry = %{}) do
-    ServerProcess.call(server, {:add_entry, new_entry})
+    GenServer.call(server, {:add_entry, new_entry})
   end
 
   def update_entry(server, entry = %{}) do
-    ServerProcess.call(server, {:update_entry, entry})
+    GenServer.call(server, {:update_entry, entry})
   end
 
   def delete_entry(server, id) do
-    ServerProcess.cast(server, {:delete_entry, id})
+    GenServer.cast(server, {:delete_entry, id})
   end
 
   def entries(server, date) do
-    ServerProcess.call(server, {:entries, self(), date})
+    GenServer.call(server, {:entries, self(), date})
   end
 end
