@@ -23,6 +23,10 @@ defmodule TodoEx.TodoServer do
     ServerProcess.start(@me)
   end
 
+  def handle_cast(request, todo_list) do
+    process_message(todo_list, request)
+  end
+
   def handle_call(request, todo_list) do
     {:ok, process_message(todo_list, request)}
   end
@@ -59,7 +63,7 @@ defmodule TodoEx.TodoServer do
   end
 
   def delete_entry(server, id) do
-    ServerProcess.call(server, {:delete_entry, id})
+    ServerProcess.cast(server, {:delete_entry, id})
   end
 
   def entries(server, date) do
