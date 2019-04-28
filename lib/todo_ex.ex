@@ -1,5 +1,4 @@
 defmodule TodoEx do
-
   @doc """
   Hello world.
 
