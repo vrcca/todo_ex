@@ -7,14 +7,17 @@ defmodule TodoEx.Server do
     GenServer.start(__MODULE__, opts)
   end
 
+  @impl GenServer
   def init(_opts) do
     {:ok, %TodoList{}}
   end
 
+  @impl GenServer
   def handle_cast(request, todo_list) do
     {:noreply, process_message(todo_list, request)}
   end
 
+  @impl GenServer
   def handle_call(request, _from, todo_list) do
     new_state = process_message(todo_list, request)
     {:reply, new_state, new_state}
