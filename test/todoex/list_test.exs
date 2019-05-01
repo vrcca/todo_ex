@@ -1,12 +1,12 @@
-defmodule TodoEx.TodoListTest do
+defmodule TodoEx.ListTest do
   use ExUnit.Case, async: true
 
-  alias TodoEx.TodoList
+  alias TodoEx.List
 
   test "adds entries with new id" do
     todo_list =
-      TodoList.new()
-      |> TodoList.add_entry(%{title: "New todo", date: ~D[2019-01-01]})
+      List.new()
+      |> List.add_entry(%{title: "New todo", date: ~D[2019-01-01]})
 
     assert todo_list.auto_id == 2
     assert map_size(todo_list.entries) == 1
@@ -17,11 +17,11 @@ defmodule TodoEx.TodoListTest do
     newer_entry = %{title: "Newer todo", date: ~D[2019-01-03]}
 
     todo_list =
-      TodoList.new()
-      |> TodoList.add_entry(older_entry)
-      |> TodoList.add_entry(newer_entry)
+      List.new()
+      |> List.add_entry(older_entry)
+      |> List.add_entry(newer_entry)
 
-    entries = todo_list |> TodoList.entries(~D[2019-01-03])
+    entries = todo_list |> List.entries(~D[2019-01-03])
 
     assert length(entries) == 1
     assert hd(entries).title == newer_entry.title
@@ -33,14 +33,14 @@ defmodule TodoEx.TodoListTest do
     newer_entry = %{title: "Newer todo", date: ~D[2019-01-03]}
 
     todo_list =
-      TodoList.new()
-      |> TodoList.add_entry(older_entry)
-      |> TodoList.add_entry(newer_entry)
+      List.new()
+      |> List.add_entry(older_entry)
+      |> List.add_entry(newer_entry)
 
     entries =
       todo_list
-      |> TodoList.update_entry(1, &Map.put(&1, :date, ~D[2019-01-03]))
-      |> TodoList.entries(~D[2019-01-03])
+      |> List.update_entry(1, &Map.put(&1, :date, ~D[2019-01-03]))
+      |> List.entries(~D[2019-01-03])
 
     assert length(entries) == 2
   end
@@ -50,14 +50,14 @@ defmodule TodoEx.TodoListTest do
     newer_entry = %{title: "Newer todo", date: ~D[2019-01-03]}
 
     todo_list =
-      TodoList.new()
-      |> TodoList.add_entry(older_entry)
-      |> TodoList.add_entry(newer_entry)
+      List.new()
+      |> List.add_entry(older_entry)
+      |> List.add_entry(newer_entry)
 
     entries =
       todo_list
-      |> TodoList.update_entry(%{id: 1, title: "New too", date: ~D[2019-01-03]})
-      |> TodoList.entries(~D[2019-01-03])
+      |> List.update_entry(%{id: 1, title: "New too", date: ~D[2019-01-03]})
+      |> List.entries(~D[2019-01-03])
 
     assert length(entries) == 2
   end
@@ -67,14 +67,14 @@ defmodule TodoEx.TodoListTest do
     newer_entry = %{title: "Newer todo", date: ~D[2019-01-03]}
 
     todo_list =
-      TodoList.new()
-      |> TodoList.add_entry(older_entry)
-      |> TodoList.add_entry(newer_entry)
+      List.new()
+      |> List.add_entry(older_entry)
+      |> List.add_entry(newer_entry)
 
     entries =
       todo_list
-      |> TodoList.update_entry(999, &Map.put(&1, :date, ~D[2019-01-03]))
-      |> TodoList.entries(~D[2019-01-03])
+      |> List.update_entry(999, &Map.put(&1, :date, ~D[2019-01-03]))
+      |> List.entries(~D[2019-01-03])
 
     assert length(entries) == 1
   end
@@ -84,13 +84,13 @@ defmodule TodoEx.TodoListTest do
     newer_entry = %{title: "Newer todo", date: ~D[2019-01-03]}
 
     todo_list =
-      TodoList.new()
-      |> TodoList.add_entry(older_entry)
-      |> TodoList.add_entry(newer_entry)
+      List.new()
+      |> List.add_entry(older_entry)
+      |> List.add_entry(newer_entry)
 
     assert_raise MatchError, fn ->
       todo_list
-      |> TodoList.update_entry(1, &Map.put(&1, :id, 12310))
+      |> List.update_entry(1, &Map.put(&1, :id, 12310))
     end
   end
 
@@ -101,11 +101,11 @@ defmodule TodoEx.TodoListTest do
       %{title: "Todo 3", date: ~D[2019-01-01]}
     ]
 
-    todo_list = TodoList.new(initial_entries)
+    todo_list = List.new(initial_entries)
 
     entries =
       todo_list
-      |> TodoList.entries(~D[2019-01-01])
+      |> List.entries(~D[2019-01-01])
 
     assert todo_list.auto_id == 4
     assert length(entries) == 3
@@ -117,20 +117,20 @@ defmodule TodoEx.TodoListTest do
       %{title: "Todo 2", date: ~D[2019-01-01]}
     ]
 
-    todo_list = TodoList.new(initial_entries)
+    todo_list = List.new(initial_entries)
 
     entries =
       todo_list
-      |> TodoList.delete_entry(2)
-      |> TodoList.entries(~D[2019-01-01])
+      |> List.delete_entry(2)
+      |> List.entries(~D[2019-01-01])
 
     assert length(entries) == 1
   end
 
   test "nothing happens when deleting unknown entry" do
     todo_list =
-      TodoList.new()
-      |> TodoList.delete_entry(333)
+      List.new()
+      |> List.delete_entry(333)
 
     assert todo_list.entries == %{}
   end

@@ -1,16 +1,16 @@
-defmodule TodoEx.TodoServerTest do
+defmodule TodoEx.ServerTest do
   use ExUnit.Case, async: true
 
-  alias TodoEx.TodoServer
+  alias TodoEx.Server
 
   setup do
-    server = start_supervised!(TodoServer)
+    server = start_supervised!(Server)
     %{server: server}
   end
 
   test "adds entries", %{server: server} do
-    TodoServer.add_entry(server, %{title: "New todo", date: ~D[2019-01-01]})
-    TodoServer.entries(server, ~D[2019-01-01])
+    Server.add_entry(server, %{title: "New todo", date: ~D[2019-01-01]})
+    Server.entries(server, ~D[2019-01-01])
 
     assert_receive {:todo_entries, entries}
     assert length(entries) == 1
@@ -21,9 +21,9 @@ defmodule TodoEx.TodoServerTest do
 
   test "updates entries", %{server: server} do
     entry = %{id: 1, title: "New todo", date: ~D[2019-01-01]}
-    TodoServer.add_entry(server, entry)
-    TodoServer.update_entry(server, %{entry | title: "My todo"})
-    TodoServer.entries(server, ~D[2019-01-01])
+    Server.add_entry(server, entry)
+    Server.update_entry(server, %{entry | title: "My todo"})
+    Server.entries(server, ~D[2019-01-01])
 
     assert_receive {:todo_entries, entries}
     assert hd(entries).id == 1
@@ -34,10 +34,10 @@ defmodule TodoEx.TodoServerTest do
   test "deletes entries", %{server: server} do
     entry = %{id: 1, title: "New todo", date: ~D[2019-01-01]}
     other_entry = %{id: 2, title: "To be deleted", date: ~D[2019-01-01]}
-    TodoServer.add_entry(server, entry)
-    TodoServer.add_entry(server, other_entry)
-    TodoServer.delete_entry(server, 2)
-    TodoServer.entries(server, ~D[2019-01-01])
+    Server.add_entry(server, entry)
+    Server.add_entry(server, other_entry)
+    Server.delete_entry(server, 2)
+    Server.entries(server, ~D[2019-01-01])
 
     assert_receive {:todo_entries, entries}
     assert hd(entries).id == 1

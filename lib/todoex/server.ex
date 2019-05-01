@@ -1,5 +1,5 @@
-defmodule TodoEx.TodoServer do
-  alias TodoEx.{TodoList}
+defmodule TodoEx.Server do
+  alias TodoEx.List, as: TodoList
   require Logger
   use GenServer
 
