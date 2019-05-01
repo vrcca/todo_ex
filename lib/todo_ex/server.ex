@@ -3,7 +3,7 @@ defmodule TodoEx.Server do
   require Logger
   use GenServer
 
-  def start_link(opts) do
+  def start_link(opts \\ []) do
     GenServer.start(__MODULE__, opts)
   end
 
