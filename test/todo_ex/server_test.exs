@@ -10,25 +10,16 @@ defmodule TodoEx.ServerTest do
 
   test "adds entries", %{server: server} do
     Server.add_entry(server, %{title: "New todo", date: ~D[2019-01-01]})
-    Server.entries(server, ~D[2019-01-01])
-
-    assert_receive {:todo_entries, entries}
-    assert length(entries) == 1
-    assert hd(entries).id == 1
-    assert hd(entries).title == "New todo"
-    assert hd(entries).date == ~D[2019-01-01]
+    entries = Server.entries(server, ~D[2019-01-01])
+    assert [%{id: 1, title: "New todo", date: ~D[2019-01-01]}] = entries
   end
 
   test "updates entries", %{server: server} do
     entry = %{id: 1, title: "New todo", date: ~D[2019-01-01]}
     Server.add_entry(server, entry)
     Server.update_entry(server, %{entry | title: "My todo"})
-    Server.entries(server, ~D[2019-01-01])
-
-    assert_receive {:todo_entries, entries}
-    assert hd(entries).id == 1
-    assert hd(entries).title == "My todo"
-    assert hd(entries).date == ~D[2019-01-01]
+    entries = Server.entries(server, ~D[2019-01-01])
+    assert [%{id: 1, title: "My todo", date: ~D[2019-01-01]}] = entries
   end
 
   test "deletes entries", %{server: server} do
@@ -37,10 +28,7 @@ defmodule TodoEx.ServerTest do
     Server.add_entry(server, entry)
     Server.add_entry(server, other_entry)
     Server.delete_entry(server, 2)
-    Server.entries(server, ~D[2019-01-01])
-
-    assert_receive {:todo_entries, entries}
-    assert hd(entries).id == 1
-    assert hd(entries).title == "New todo"
+    entries = Server.entries(server, ~D[2019-01-01])
+    assert [%{id: 1, title: "New todo"}] = entries
   end
 end

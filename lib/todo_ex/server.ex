@@ -1,5 +1,4 @@
 defmodule TodoEx.Server do
-  alias TodoEx.List, as: TodoList
   require Logger
   use GenServer
 
@@ -9,12 +8,18 @@ defmodule TodoEx.Server do
 
   @impl GenServer
   def init(_opts) do
-    {:ok, %TodoList{}}
+    {:ok, %TodoEx.List{}}
   end
 
   @impl GenServer
   def handle_cast(request, todo_list) do
     {:noreply, process_message(todo_list, request)}
+  end
+
+  @impl GenServer
+  def handle_call({:entries, date}, _from, todo_list) do
+    entries = TodoEx.List.entries(todo_list, date)
+    {:reply, entries, todo_list}
   end
 
   @impl GenServer
@@ -24,20 +29,15 @@ defmodule TodoEx.Server do
   end
 
   defp process_message(todo_list, {:add_entry, new_entry}) do
-    TodoList.add_entry(todo_list, new_entry)
+    TodoEx.List.add_entry(todo_list, new_entry)
   end
 
   defp process_message(todo_list, {:update_entry, entry}) do
-    TodoList.update_entry(todo_list, entry)
+    TodoEx.List.update_entry(todo_list, entry)
   end
 
   defp process_message(todo_list, {:delete_entry, id}) do
-    TodoList.delete_entry(todo_list, id)
-  end
-
-  defp process_message(todo_list, {:entries, caller, date}) do
-    send(caller, {:todo_entries, TodoList.entries(todo_list, date)})
-    todo_list
+    TodoEx.List.delete_entry(todo_list, id)
   end
 
   defp process_message(todo_list, unknown_message) do
@@ -59,6 +59,6 @@ defmodule TodoEx.Server do
   end
 
   def entries(server, date) do
-    GenServer.call(server, {:entries, self(), date})
+    GenServer.call(server, {:entries, date})
   end
 end

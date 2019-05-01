@@ -1,8 +1,8 @@
 defmodule TodoEx.Cache do
   use GenServer
 
-  def start_link() do
-    GenServer.start(__MODULE__, nil)
+  def start_link(opts \\ []) do
+    GenServer.start(__MODULE__, opts)
   end
 
   def init(_opts) do
