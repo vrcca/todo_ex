@@ -1,11 +1,13 @@
 defmodule TodoEx.Cache do
   use GenServer
+  alias TodoEx.{Database, Server}
 
   def start_link(opts \\ []) do
     GenServer.start(__MODULE__, opts)
   end
 
   def init(_opts) do
+    Database.start()
     {:ok, %{}}
   end
 
@@ -15,7 +17,7 @@ defmodule TodoEx.Cache do
         {:reply, server, servers}
 
       :error ->
-        {:ok, new_server} = TodoEx.Server.start_link()
+        {:ok, new_server} = Server.start_link(name)
         {:reply, new_server, Map.put(servers, name, new_server)}
     end
   end

@@ -1,31 +1,41 @@
 defmodule TodoEx.Server do
   require Logger
   use GenServer
+  alias TodoEx.Database
 
-  def start_link(opts \\ []) do
+  def start_link(opts) do
     GenServer.start(__MODULE__, opts)
   end
 
   @impl GenServer
-  def init(_opts) do
-    {:ok, %TodoEx.List{}}
+  def init(name) do
+    {:ok, {name, nil}, {:continue, :init_by_name}}
   end
 
   @impl GenServer
-  def handle_cast(request, todo_list) do
-    {:noreply, process_message(todo_list, request)}
+  def handle_continue(:init_by_name, {name, _list}) do
+    todo_list = Database.get(name) || TodoEx.List.new()
+    {:noreply, {name, todo_list}}
   end
 
   @impl GenServer
-  def handle_call({:entries, date}, _from, todo_list) do
-    entries = TodoEx.List.entries(todo_list, date)
-    {:reply, entries, todo_list}
-  end
-
-  @impl GenServer
-  def handle_call(request, _from, todo_list) do
+  def handle_cast(request, {name, todo_list}) do
     new_state = process_message(todo_list, request)
-    {:reply, new_state, new_state}
+    Database.store(name, new_state)
+    {:noreply, {name, new_state}}
+  end
+
+  @impl GenServer
+  def handle_call({:entries, date}, _from, {name, todo_list}) do
+    entries = TodoEx.List.entries(todo_list, date)
+    {:reply, entries, {name, todo_list}}
+  end
+
+  @impl GenServer
+  def handle_call(request, _from, {name, todo_list}) do
+    new_state = process_message(todo_list, request)
+    Database.store(name, new_state)
+    {:reply, new_state, {name, new_state}}
   end
 
   defp process_message(todo_list, {:add_entry, new_entry}) do
