@@ -2,8 +2,10 @@ defmodule TodoEx.ServerTest do
   use ExUnit.Case, async: true
 
   alias TodoEx.Server
+  alias TodoEx.Database
 
   setup do
+    {:ok, _pid} = start_supervised(Database)
     server = start_supervised!(Server)
     %{server: server}
   end

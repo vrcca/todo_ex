@@ -15,9 +15,20 @@ defmodule TodoEx.CacheTest do
   end
 
   test "to-do operations", %{cache: cache} do
-    alice = Cache.server_process(cache, "alice")
-    TodoEx.Server.add_entry(alice, %{date: ~D[2018-12-19], title: "Dentist"})
-    entries = TodoEx.Server.entries(alice, ~D[2018-12-19])
-    assert [%{date: ~D[2018-12-19], title: "Dentist"}] = entries
+    date = ~D[2018-12-19]
+    alice = Cache.server_process(cache, "alice") |> delete_all_entries_at(date)
+
+    TodoEx.Server.add_entry(alice, %{date: date, title: "Dentist"})
+
+    entries = TodoEx.Server.entries(alice, date)
+    assert [%{date: date, title: "Dentist"}] = entries
+  end
+
+  defp delete_all_entries_at(list, date) do
+    TodoEx.Server.entries(list, date)
+    |> Stream.map(fn entry -> entry.id end)
+    |> Enum.each(fn id -> TodoEx.Server.delete_entry(list, id) end)
+
+    list
   end
 end

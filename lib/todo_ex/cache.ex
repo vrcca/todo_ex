@@ -7,7 +7,7 @@ defmodule TodoEx.Cache do
   end
 
   def init(_opts) do
-    Database.start()
+    Database.start_link()
     {:ok, %{}}
   end
 
