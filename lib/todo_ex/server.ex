@@ -15,6 +15,7 @@ defmodule TodoEx.Server do
   @impl GenServer
   def handle_continue(:init_by_name, {name, _list}) do
     todo_list = Database.get(name) || TodoEx.List.new()
+
     {:noreply, {name, todo_list}}
   end
 

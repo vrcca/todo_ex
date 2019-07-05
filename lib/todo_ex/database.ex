@@ -32,7 +32,7 @@ defmodule TodoEx.Database do
     data =
       case File.read(file_name(key)) do
         {:ok, contents} -> :erlang.binary_to_term(contents)
-        _ -> nil
+        _others -> nil
       end
 
     {:reply, data, state}
