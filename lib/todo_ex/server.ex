@@ -51,6 +51,11 @@ defmodule TodoEx.Server do
     TodoEx.List.delete_entry(todo_list, id)
   end
 
+  defp process_message(todo_list, {:clear_entries}) do
+    todo_list
+    |> TodoEx.List.clear_entries()
+  end
+
   defp process_message(todo_list, unknown_message) do
     Logger.warn("There is no handler for message: #{unknown_message}!")
     todo_list
@@ -71,5 +76,9 @@ defmodule TodoEx.Server do
 
   def entries(server, date) do
     GenServer.call(server, {:entries, date})
+  end
+
+  def clear_entries(server) do
+    GenServer.call(server, {:clear_entries})
   end
 end

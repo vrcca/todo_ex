@@ -22,6 +22,10 @@ defmodule TodoEx.List do
     |> Enum.map(fn {_, entry} -> entry end)
   end
 
+  def clear_entries(list = %List{}) do
+    Map.put(list, :entries, %{})
+  end
+
   def update_entry(todo_list = %List{entries: entries}, entry_id, updater_fun) do
     case Map.fetch(entries, entry_id) do
       :error ->
