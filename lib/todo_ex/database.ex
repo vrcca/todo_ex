@@ -38,32 +38,26 @@ defmodule TodoEx.Database do
   end
 
   @impl GenServer
-  def handle_call(request = {:get, key}, _from, state = %{workers: workers}) do
-    result =
-      choose_worker(workers, key)
-      |> GenServer.call(request)
+  def handle_call({:choose_worker, key}, _from, state = %{workers: workers}) do
+    index = :erlang.phash2(key, 3)
+    worker = Map.get(workers, index)
 
-    {:reply, result, state}
-  end
-
-  @impl GenServer
-  def handle_cast(request = {:store, key, _data}, state = %{workers: workers}) do
-    choose_worker(workers, key)
-    |> GenServer.cast(request)
-
-    {:noreply, state}
+    {:reply, worker, state}
   end
 
   def store(key, data) do
-    GenServer.cast(__MODULE__, {:store, key, data})
+    key
+    |> choose_worker()
+    |> TodoEx.DatabaseWorker.store(key, data)
   end
 
   def get(key) do
-    GenServer.call(__MODULE__, {:get, key})
+    key
+    |> choose_worker()
+    |> TodoEx.DatabaseWorker.get(key)
   end
 
-  defp choose_worker(workers, key) do
-    index = :erlang.phash2(key, 3)
-    Map.get(workers, index)
+  defp choose_worker(key) do
+    GenServer.call(__MODULE__, {:choose_worker, key})
   end
 end
