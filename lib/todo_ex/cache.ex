@@ -3,12 +3,17 @@ defmodule TodoEx.Cache do
   alias TodoEx.{Database, Server}
 
   def start_link(opts \\ []) do
-    GenServer.start(__MODULE__, opts)
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
   def init(_opts) do
+    IO.puts("Starting to-do cache.")
+    {:ok, %{}, {:continue, :start_db}}
+  end
+
+  def handle_continue(:start_db, state) do
     Database.start_link()
-    {:ok, %{}}
+    {:noreply, state}
   end
 
   def handle_call({:server_process, name}, _from, servers) do
@@ -23,7 +28,7 @@ defmodule TodoEx.Cache do
   end
 
   # Client API
-  def server_process(cache, name) do
-    GenServer.call(cache, {:server_process, name})
+  def server_process(name) do
+    GenServer.call(__MODULE__, {:server_process, name})
   end
 end

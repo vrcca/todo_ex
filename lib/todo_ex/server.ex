@@ -4,11 +4,12 @@ defmodule TodoEx.Server do
   alias TodoEx.Database
 
   def start_link(opts) do
-    GenServer.start(__MODULE__, opts)
+    GenServer.start_link(__MODULE__, opts)
   end
 
   @impl GenServer
   def init(name) do
+    IO.puts("Starting to-do server.")
     {:ok, {name, nil}, {:continue, :init_by_name}}
   end
 

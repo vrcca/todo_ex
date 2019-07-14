@@ -5,11 +5,9 @@ defmodule TodoEx.ServerTest do
   alias TodoEx.Database
 
   setup do
-    {:ok, _pid} = start_supervised({Database, %{num_workers: 1, db_folder: "./priv/db_temp"}})
+    start_supervised!({Database, %{num_workers: 1, db_folder: "./priv/db_temp"}})
     server = start_supervised!({Server, "simple todo"})
-
     Server.clear_entries(server)
-
     %{server: server}
   end
 

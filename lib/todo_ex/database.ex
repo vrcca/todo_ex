@@ -6,7 +6,7 @@ defmodule TodoEx.Database do
 
   def start_link(opts \\ %{}) do
     opts = set_defaults(opts)
-    GenServer.start(__MODULE__, opts, name: __MODULE__)
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
   defp set_defaults(opts) do
@@ -19,17 +19,20 @@ defmodule TodoEx.Database do
   end
 
   @impl GenServer
-  def init(opts = %{num_workers: num_workers, db_folder: db_folder})
+  def init(opts = %{num_workers: num_workers})
       when is_number(num_workers) do
-    File.mkdir_p!(db_folder)
+    IO.puts("Starting database server.")
     {:ok, opts, {:continue, :start_workers}}
   end
 
   @impl GenServer
   def handle_continue(:start_workers, state = %{num_workers: num_workers, db_folder: db_folder}) do
+    File.mkdir_p!(db_folder)
+    |> IO.inspect()
+
     workers =
       Enum.into(0..num_workers, %{}, fn index ->
-        {:ok, worker} = TodoEx.DatabaseWorker.start(db_folder: db_folder)
+        {:ok, worker} = TodoEx.DatabaseWorker.start_link(db_folder: db_folder)
         {index, worker}
       end)
 
@@ -38,8 +41,12 @@ defmodule TodoEx.Database do
   end
 
   @impl GenServer
-  def handle_call({:choose_worker, key}, _from, state = %{workers: workers}) do
-    index = :erlang.phash2(key, 3)
+  def handle_call(
+        {:choose_worker, key},
+        _from,
+        state = %{workers: workers, num_workers: num_workers}
+      ) do
+    index = :erlang.phash2(key, num_workers)
     worker = Map.get(workers, index)
 
     {:reply, worker, state}

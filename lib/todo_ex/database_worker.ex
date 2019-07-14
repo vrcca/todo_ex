@@ -1,22 +1,23 @@
 defmodule TodoEx.DatabaseWorker do
   use GenServer
 
-  def start(opts) do
-    GenServer.start(__MODULE__, opts)
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts)
   end
 
   @impl GenServer
   def init(db_folder: db_folder) do
+    IO.puts("Starting database worker.")
     {:ok, %{db_folder: db_folder}}
   end
 
   @impl GenServer
-  def handle_cast({:store, key, data}, state) do
+  def handle_call({:store, key, data}, _from, state) do
     key
     |> file_name(state)
     |> File.write!(:erlang.term_to_binary(data))
 
-    {:noreply, state}
+    {:reply, state, state}
   end
 
   @impl GenServer
@@ -31,7 +32,7 @@ defmodule TodoEx.DatabaseWorker do
   end
 
   def store(pid, key, data) do
-    GenServer.cast(pid, {:store, key, data})
+    GenServer.call(pid, {:store, key, data})
   end
 
   def get(pid, key) do
