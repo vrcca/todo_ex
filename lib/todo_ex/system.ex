@@ -6,6 +6,11 @@ defmodule TodoEx.System do
   end
 
   def init(_) do
-    Supervisor.init([TodoEx.Cache], strategy: :one_for_one)
+    children = [
+      {TodoEx.Database, %{}},
+      TodoEx.Cache
+    ]
+
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end
