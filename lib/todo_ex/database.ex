@@ -28,28 +28,22 @@ defmodule TodoEx.Database do
   @impl GenServer
   def handle_continue(:start_workers, state = %{num_workers: num_workers, db_folder: db_folder}) do
     File.mkdir_p!(db_folder)
-    |> IO.inspect()
 
-    workers =
-      Enum.into(0..num_workers, %{}, fn index ->
-        {:ok, worker} = TodoEx.DatabaseWorker.start_link(db_folder: db_folder)
-        {index, worker}
-      end)
+    Enum.each(0..num_workers, fn index ->
+      {:ok, _pid} = TodoEx.DatabaseWorker.start_link(%{id: index, db_folder: db_folder})
+    end)
 
-    new_state = Map.put(state, :workers, workers)
-    {:noreply, new_state}
+    {:noreply, state}
   end
 
   @impl GenServer
   def handle_call(
         {:choose_worker, key},
         _from,
-        state = %{workers: workers, num_workers: num_workers}
+        state = %{num_workers: num_workers}
       ) do
-    index = :erlang.phash2(key, num_workers)
-    worker = Map.get(workers, index)
-
-    {:reply, worker, state}
+    worker_id = :erlang.phash2(key, num_workers)
+    {:reply, worker_id, state}
   end
 
   def store(key, data) do

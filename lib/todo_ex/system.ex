@@ -7,6 +7,7 @@ defmodule TodoEx.System do
 
   def init(_) do
     children = [
+      TodoEx.ProcessRegistry,
       {TodoEx.Database, %{}},
       TodoEx.Cache
     ]

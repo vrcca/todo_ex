@@ -1,14 +1,14 @@
 defmodule TodoEx.DatabaseWorker do
   use GenServer
 
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts)
+  def start_link(opts = %{id: id}) do
+    GenServer.start_link(__MODULE__, opts, name: via_tuple(id))
   end
 
   @impl GenServer
-  def init(db_folder: db_folder) do
+  def init(opts) do
     IO.puts("Starting database worker.")
-    {:ok, %{db_folder: db_folder}}
+    {:ok, opts}
   end
 
   @impl GenServer
@@ -31,13 +31,17 @@ defmodule TodoEx.DatabaseWorker do
     {:reply, data, state}
   end
 
-  def store(pid, key, data) do
-    GenServer.call(pid, {:store, key, data})
+  def store(id, key, data) do
+    GenServer.call(via_tuple(id), {:store, key, data})
   end
 
-  def get(pid, key) do
-    GenServer.call(pid, {:get, key})
+  def get(id, key) do
+    GenServer.call(via_tuple(id), {:get, key})
   end
 
   defp file_name(key, %{db_folder: db_folder}), do: Path.join(db_folder, to_string(key))
+
+  defp via_tuple(id) do
+    TodoEx.ProcessRegistry.via_tuple({__MODULE__, id})
+  end
 end
