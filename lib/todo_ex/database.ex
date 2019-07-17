@@ -1,4 +1,5 @@
 defmodule TodoEx.Database do
+  require Logger
 
   @default_num_workers 5
   @default_db_folder "./persist"
@@ -9,10 +10,10 @@ defmodule TodoEx.Database do
   end
 
   def init(%{db_folder: db_folder}) do
-    IO.puts("Starting database server.")
+    Logger.info("Starting database server.")
     File.mkdir_p!(db_folder)
 
-    children = Enum.map(0..@default_num_workers, fn id -> worker_spec(id, db_folder) end)
+    children = Enum.map(0..(@default_num_workers - 1), fn id -> worker_spec(id, db_folder) end)
     Supervisor.init(children, strategy: :one_for_one)
   end
 

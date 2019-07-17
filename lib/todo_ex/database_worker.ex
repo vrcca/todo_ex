@@ -1,4 +1,5 @@
 defmodule TodoEx.DatabaseWorker do
+  require Logger
   use GenServer
 
   def start_link(opts = %{id: id}) do
@@ -7,7 +8,7 @@ defmodule TodoEx.DatabaseWorker do
 
   @impl GenServer
   def init(opts) do
-    IO.puts("Starting database worker.")
+    Logger.debug("Starting database worker. #{inspect(opts)}")
     {:ok, opts}
   end
 

@@ -1,4 +1,5 @@
 defmodule TodoEx.Cache do
+  require Logger
   use GenServer
   alias TodoEx.Server
 
@@ -7,7 +8,7 @@ defmodule TodoEx.Cache do
   end
 
   def init(_opts) do
-    IO.puts("Starting to-do cache.")
+    Logger.info("Starting to-do cache.")
     {:ok, %{}}
   end
 

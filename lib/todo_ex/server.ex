@@ -9,7 +9,7 @@ defmodule TodoEx.Server do
 
   @impl GenServer
   def init(name) do
-    IO.puts("Starting to-do server.")
+    Logger.info("Starting to-do server.")
     {:ok, {name, nil}, {:continue, :init_by_name}}
   end
 
