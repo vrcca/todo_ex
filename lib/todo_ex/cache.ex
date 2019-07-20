@@ -18,7 +18,7 @@ defmodule TodoEx.Cache do
         {:reply, server, servers}
 
       :error ->
-        {:ok, new_server} = Server.start_link(name)
+        {:ok, new_server} = Server.start_link(%{name: name})
         {:reply, new_server, Map.put(servers, name, new_server)}
     end
   end

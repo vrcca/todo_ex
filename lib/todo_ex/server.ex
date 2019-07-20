@@ -1,10 +1,10 @@
 defmodule TodoEx.Server do
   require Logger
-  use GenServer
+  use GenServer, restart: :temporary
   alias TodoEx.Database
 
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts)
+  def start_link(%{name: name}) do
+    GenServer.start_link(__MODULE__, name)
   end
 
   @impl GenServer
