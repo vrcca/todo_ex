@@ -1,15 +1,20 @@
 defmodule TodoEx.Cache do
   require Logger
-  use GenServer
   alias TodoEx.Server
 
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  def start_link(_opts) do
+    Logger.info("Starting to-do cache.")
+    DynamicSupervisor.start_link(name: __MODULE__, strategy: :one_for_one)
   end
 
-  def init(_opts) do
-    Logger.info("Starting to-do cache.")
-    {:ok, %{}}
+  def child_spec(opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [opts]},
+      type: :worker,
+      restart: :permanent,
+      shutdown: 500
+    }
   end
 
   def handle_call({:server_process, name}, _from, servers) do
@@ -18,13 +23,20 @@ defmodule TodoEx.Cache do
         {:reply, server, servers}
 
       :error ->
-        {:ok, new_server} = Server.start_link(%{name: name})
+        {:ok, new_server} = start_child(name)
         {:reply, new_server, Map.put(servers, name, new_server)}
     end
   end
 
+  defp start_child(name) do
+    DynamicSupervisor.start_child(__MODULE__, {Server, %{name: name}})
+  end
+
   # Client API
   def server_process(name) do
-    GenServer.call(__MODULE__, {:server_process, name})
+    case start_child(name) do
+      {:ok, pid} -> pid
+      {:error, {:already_started, pid}} -> pid
+    end
   end
 end
