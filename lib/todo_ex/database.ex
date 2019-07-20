@@ -13,7 +13,11 @@ defmodule TodoEx.Database do
     Logger.info("Starting database server.")
     File.mkdir_p!(db_folder)
 
-    children = Enum.map(0..(@default_num_workers - 1), fn id -> worker_spec(id, db_folder) end)
+    children =
+      Enum.map(0..(@default_num_workers - 1), fn id ->
+        worker_spec(id + 1, db_folder)
+      end)
+
     Supervisor.init(children, strategy: :one_for_one)
   end
 
@@ -50,6 +54,6 @@ defmodule TodoEx.Database do
   end
 
   defp choose_worker(key) do
-    :erlang.phash2(key, @default_num_workers)
+    :erlang.phash2(key, @default_num_workers) + 1
   end
 end
