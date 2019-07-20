@@ -9,6 +9,7 @@ defmodule TodoEx.ServerTest do
     start_supervised!(ProcessRegistry)
     start_supervised!({Database, %{num_workers: 1, db_folder: "./priv/db_temp"}})
     server = start_supervised!({Server, %{name: "simple todo"}})
+
     Server.clear_entries(server)
     %{server: server}
   end
