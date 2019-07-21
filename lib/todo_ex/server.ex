@@ -57,8 +57,7 @@ defmodule TodoEx.Server do
   end
 
   defp process_message(todo_list, {:clear_entries}) do
-    todo_list
-    |> TodoEx.List.clear_entries()
+    TodoEx.List.clear_entries(todo_list)
   end
 
   defp process_message(todo_list, unknown_message) do
@@ -66,7 +65,7 @@ defmodule TodoEx.Server do
     todo_list
   end
 
-  # Client methods
+  # Client API
   def add_entry(server, new_entry = %{}) do
     GenServer.call(server, {:add_entry, new_entry})
   end

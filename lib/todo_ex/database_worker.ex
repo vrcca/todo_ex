@@ -32,6 +32,7 @@ defmodule TodoEx.DatabaseWorker do
     {:reply, data, state}
   end
 
+  # CLIENT API
   def store(id, key, data) do
     GenServer.call(via_tuple(id), {:store, key, data})
   end
@@ -40,6 +41,7 @@ defmodule TodoEx.DatabaseWorker do
     GenServer.call(via_tuple(id), {:get, key})
   end
 
+  # HELPERS
   defp file_name(key, %{db_folder: db_folder}), do: Path.join(db_folder, to_string(key))
 
   defp via_tuple(id) do

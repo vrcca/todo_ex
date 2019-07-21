@@ -29,18 +29,7 @@ defmodule TodoEx.Database do
     }
   end
 
-  defp set_defaults(opts) do
-    db_folder = Map.get(opts, :db_folder, @default_db_folder)
-
-    opts
-    |> Map.put(:db_folder, db_folder)
-  end
-
-  defp worker_spec(id, db_folder) do
-    default_worker_spec = {TodoEx.DatabaseWorker, %{id: id, db_folder: db_folder}}
-    Supervisor.child_spec(default_worker_spec, id: id)
-  end
-
+  # CLIENT API
   def store(key, data) do
     key
     |> choose_worker()
@@ -53,7 +42,20 @@ defmodule TodoEx.Database do
     |> TodoEx.DatabaseWorker.get(key)
   end
 
+  # HELPERS
   defp choose_worker(key) do
     :erlang.phash2(key, @default_num_workers) + 1
+  end
+
+  defp set_defaults(opts) do
+    db_folder = Map.get(opts, :db_folder, @default_db_folder)
+
+    opts
+    |> Map.put(:db_folder, db_folder)
+  end
+
+  defp worker_spec(id, db_folder) do
+    default_worker_spec = {TodoEx.DatabaseWorker, %{id: id, db_folder: db_folder}}
+    Supervisor.child_spec(default_worker_spec, id: id)
   end
 end
