@@ -3,6 +3,8 @@ defmodule TodoEx.Server do
   use GenServer, restart: :temporary
   alias TodoEx.{Database, ProcessRegistry}
 
+  @expiry_idle_timeout :timer.seconds(10)
+
   def start_link(%{name: name}) do
     GenServer.start_link(__MODULE__, name, name: via_tuple(name))
   end
@@ -21,27 +23,32 @@ defmodule TodoEx.Server do
   def handle_continue(:init_by_name, {name, _list}) do
     todo_list = Database.get(name) || TodoEx.List.new()
 
-    {:noreply, {name, todo_list}}
+    {:noreply, {name, todo_list}, @expiry_idle_timeout}
   end
 
   @impl GenServer
   def handle_cast(request, {name, todo_list}) do
     new_state = process_message(todo_list, request)
     Database.store(name, new_state)
-    {:noreply, {name, new_state}}
+    {:noreply, {name, new_state}, @expiry_idle_timeout}
   end
 
   @impl GenServer
   def handle_call({:entries, date}, _from, {name, todo_list}) do
     entries = TodoEx.List.entries(todo_list, date)
-    {:reply, entries, {name, todo_list}}
+    {:reply, entries, {name, todo_list}, @expiry_idle_timeout}
   end
 
   @impl GenServer
   def handle_call(request, _from, {name, todo_list}) do
     new_state = process_message(todo_list, request)
     Database.store(name, new_state)
-    {:reply, new_state, {name, new_state}}
+    {:reply, new_state, {name, new_state}, @expiry_idle_timeout}
+  end
+
+  def handle_info(:timeout, state = {name, _}) do
+    Logger.info("Stopping to-do server for #{name}")
+    {:stop, :normal, state}
   end
 
   defp process_message(todo_list, {:add_entry, new_entry}) do
