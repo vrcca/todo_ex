@@ -7,10 +7,10 @@ defmodule TodoEx.System do
 
   def init(_) do
     children = [
-      TodoEx.Metrics,
       TodoEx.ProcessRegistry,
       TodoEx.Database,
-      TodoEx.Cache
+      TodoEx.Cache,
+      TodoEx.Web
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

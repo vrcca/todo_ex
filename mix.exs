@@ -22,7 +22,8 @@ defmodule TodoEx.MixProject do
     [
       {:mix_test_watch, "~> 0.8", only: :dev},
       {:ex_unit_notifier, "~> 0.1", only: :test},
-      {:poolboy, "~> 1.5"}
+      {:poolboy, "~> 1.5"},
+      {:plug_cowboy, "~> 2.1"}
     ]
   end
 end
