@@ -2,7 +2,7 @@ defmodule TodoEx.Database do
   require Logger
 
   @default_num_workers 5
-  @default_db_folder "./persist"
+  @default_db_folder Application.fetch_env!(:todo_ex, :db_folder)
 
   def child_spec(_opts) do
     File.mkdir_p!(@default_db_folder)
