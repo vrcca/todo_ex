@@ -9,7 +9,7 @@ defmodule TodoEx.System do
     children = [
       TodoEx.Metrics,
       TodoEx.ProcessRegistry,
-      {TodoEx.Database, %{}},
+      TodoEx.Database,
       TodoEx.Cache
     ]
 

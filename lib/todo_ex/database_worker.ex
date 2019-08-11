@@ -2,8 +2,8 @@ defmodule TodoEx.DatabaseWorker do
   require Logger
   use GenServer
 
-  def start_link(opts = %{id: id}) do
-    GenServer.start_link(__MODULE__, opts, name: via_tuple(id))
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts)
   end
 
   @impl GenServer
@@ -33,18 +33,14 @@ defmodule TodoEx.DatabaseWorker do
   end
 
   # CLIENT API
-  def store(id, key, data) do
-    GenServer.call(via_tuple(id), {:store, key, data})
+  def store(pid, key, data) do
+    GenServer.call(pid, {:store, key, data})
   end
 
-  def get(id, key) do
-    GenServer.call(via_tuple(id), {:get, key})
+  def get(pid, key) do
+    GenServer.call(pid, {:get, key})
   end
 
   # HELPERS
   defp file_name(key, %{db_folder: db_folder}), do: Path.join(db_folder, to_string(key))
-
-  defp via_tuple(id) do
-    TodoEx.ProcessRegistry.via_tuple({__MODULE__, id})
-  end
 end

@@ -4,58 +4,36 @@ defmodule TodoEx.Database do
   @default_num_workers 5
   @default_db_folder "./persist"
 
-  def start_link(opts \\ %{}) do
-    opts = set_defaults(opts)
-    Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
-  end
+  def child_spec(_opts) do
+    File.mkdir_p!(@default_db_folder)
 
-  def init(%{db_folder: db_folder}) do
-    Logger.info("Starting database server.")
-    File.mkdir_p!(db_folder)
-
-    children =
-      Enum.map(0..(@default_num_workers - 1), fn id ->
-        worker_spec(id + 1, db_folder)
-      end)
-
-    Supervisor.init(children, strategy: :one_for_one)
-  end
-
-  def child_spec(opts) do
-    %{
-      id: __MODULE__,
-      start: {__MODULE__, :start_link, [opts]},
-      type: :supervisor
-    }
+    :poolboy.child_spec(
+      __MODULE__,
+      [
+        name: {:local, __MODULE__},
+        worker_module: TodoEx.DatabaseWorker,
+        size: @default_num_workers
+      ],
+      %{db_folder: @default_db_folder}
+    )
   end
 
   # CLIENT API
   def store(key, data) do
-    key
-    |> choose_worker()
-    |> TodoEx.DatabaseWorker.store(key, data)
+    :poolboy.transaction(
+      __MODULE__,
+      fn worker_pid ->
+        TodoEx.DatabaseWorker.store(worker_pid, key, data)
+      end
+    )
   end
 
   def get(key) do
-    key
-    |> choose_worker()
-    |> TodoEx.DatabaseWorker.get(key)
-  end
-
-  # HELPERS
-  defp choose_worker(key) do
-    :erlang.phash2(key, @default_num_workers) + 1
-  end
-
-  defp set_defaults(opts) do
-    db_folder = Map.get(opts, :db_folder, @default_db_folder)
-
-    opts
-    |> Map.put(:db_folder, db_folder)
-  end
-
-  defp worker_spec(id, db_folder) do
-    default_worker_spec = {TodoEx.DatabaseWorker, %{id: id, db_folder: db_folder}}
-    Supervisor.child_spec(default_worker_spec, id: id)
+    :poolboy.transaction(
+      __MODULE__,
+      fn worker_pid ->
+        TodoEx.DatabaseWorker.get(worker_pid, key)
+      end
+    )
   end
 end

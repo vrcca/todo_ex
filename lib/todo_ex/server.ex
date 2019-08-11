@@ -46,6 +46,7 @@ defmodule TodoEx.Server do
     {:reply, new_state, {name, new_state}, @expiry_idle_timeout}
   end
 
+  @impl GenServer
   def handle_info(:timeout, state = {name, _}) do
     Logger.info("Stopping to-do server for #{name}")
     {:stop, :normal, state}
