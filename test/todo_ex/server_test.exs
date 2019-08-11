@@ -2,12 +2,8 @@ defmodule TodoEx.ServerTest do
   use ExUnit.Case, async: true
 
   alias TodoEx.Server
-  alias TodoEx.Database
-  alias TodoEx.ProcessRegistry
 
   setup do
-    start_supervised!(ProcessRegistry)
-    start_supervised!({Database, %{num_workers: 1, db_folder: "./priv/db_temp"}})
     server = start_supervised!({Server, %{name: "simple todo"}})
 
     Server.clear_entries(server)

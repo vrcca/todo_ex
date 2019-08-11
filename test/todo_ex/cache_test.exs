@@ -1,12 +1,6 @@
 defmodule TodoEx.CacheTest do
   use ExUnit.Case
-  alias TodoEx.{ProcessRegistry, Cache}
-
-  setup do
-    start_supervised!(ProcessRegistry)
-    start_supervised!(Cache)
-    :ok
-  end
+  alias TodoEx.Cache
 
   test "retrieves correct server by name" do
     bob_pid = Cache.server_process("bob")
