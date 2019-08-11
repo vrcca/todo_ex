@@ -7,15 +7,14 @@ defmodule TodoEx.Database do
   def child_spec(_opts) do
     File.mkdir_p!(@default_db_folder)
 
-    :poolboy.child_spec(
-      __MODULE__,
-      [
-        name: {:local, __MODULE__},
-        worker_module: TodoEx.DatabaseWorker,
-        size: @default_num_workers
-      ],
-      %{db_folder: @default_db_folder}
-    )
+    poolboy_opts = [
+      name: {:local, __MODULE__},
+      worker_module: TodoEx.DatabaseWorker,
+      size: @default_num_workers
+    ]
+
+    workers_opts = %{db_folder: @default_db_folder}
+    :poolboy.child_spec(__MODULE__, poolboy_opts, workers_opts)
   end
 
   # CLIENT API

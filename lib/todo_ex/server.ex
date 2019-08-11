@@ -3,7 +3,7 @@ defmodule TodoEx.Server do
   use GenServer, restart: :temporary
   alias TodoEx.{Database, ProcessRegistry}
 
-  @expiry_idle_timeout :timer.seconds(10)
+  @expiry_idle_timeout :timer.seconds(60)
 
   def start_link(%{name: name}) do
     GenServer.start_link(__MODULE__, name, name: via_tuple(name))
@@ -48,7 +48,10 @@ defmodule TodoEx.Server do
 
   @impl GenServer
   def handle_info(:timeout, state = {name, _}) do
-    Logger.info("Stopping to-do server for #{name}")
+    Logger.info(
+      "Stopping to-do server for #{name}. Reason: inactivite for #{@expiry_idle_timeout} milliseconds."
+    )
+
     {:stop, :normal, state}
   end
 
