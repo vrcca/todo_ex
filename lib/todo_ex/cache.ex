@@ -19,14 +19,18 @@ defmodule TodoEx.Cache do
 
   # Client API
   def server_process(name) do
-    case start_child(name) do
-      {:ok, pid} -> pid
-      {:error, {:already_started, pid}} -> pid
-    end
+    existing_process(name) || new_process(name)
   end
 
   # HELPERS
-  defp start_child(name) do
-    DynamicSupervisor.start_child(__MODULE__, {Server, %{name: name}})
+  defp existing_process(name) do
+    Server.whereis(name)
+  end
+
+  defp new_process(name) do
+    case DynamicSupervisor.start_child(__MODULE__, {Server, %{name: name}}) do
+      {:ok, pid} -> pid
+      {:error, {:already_started, pid}} -> pid
+    end
   end
 end

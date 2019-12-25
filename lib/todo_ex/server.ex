@@ -6,11 +6,11 @@ defmodule TodoEx.Server do
   @expiry_idle_timeout :timer.seconds(60)
 
   def start_link(%{name: name}) do
-    GenServer.start_link(__MODULE__, name, name: via_tuple(name))
+    GenServer.start_link(__MODULE__, name, name: global_name(name))
   end
 
-  defp via_tuple(name) do
-    ProcessRegistry.via_tuple({__MODULE__, name})
+  defp global_name(name) do
+    {:global, {__MODULE__, name}}
   end
 
   @impl GenServer
@@ -95,5 +95,12 @@ defmodule TodoEx.Server do
 
   def clear_entries(server) do
     GenServer.call(server, {:clear_entries})
+  end
+
+  def whereis(name) do
+    case :global.whereis_name({__MODULE__, name}) do
+      :undefined -> nil
+      pid -> pid
+    end
   end
 end
