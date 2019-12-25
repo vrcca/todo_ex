@@ -19,18 +19,22 @@ defmodule TodoEx.Cache do
 
   # Client API
   def server_process(name) do
-    existing_process(name) || new_process(name)
+    :rpc.call(node_for_list(name), TodoEx.Cache, :server_process_locally, [name])
   end
 
-  # HELPERS
-  defp existing_process(name) do
-    Server.whereis(name)
-  end
-
-  defp new_process(name) do
+  def server_process_locally(name) do
     case DynamicSupervisor.start_child(__MODULE__, {Server, %{name: name}}) do
       {:ok, pid} -> pid
       {:error, {:already_started, pid}} -> pid
     end
+  end
+
+  # HELPERS
+  defp node_for_list(name) do
+    all_sorted_nodes = Enum.sort(Node.list([:this, :visible]))
+
+    node_index = :erlang.phash2(name, length(all_sorted_nodes))
+
+    Enum.at(all_sorted_nodes, node_index)
   end
 end
