@@ -1,7 +1,7 @@
 defmodule TodoEx.Server do
   require Logger
   use GenServer, restart: :temporary
-  alias TodoEx.{Database, ProcessRegistry}
+  alias TodoEx.Database
 
   @expiry_idle_timeout :timer.seconds(60)
 
