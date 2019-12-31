@@ -1,5 +1,5 @@
 # -------------- builder phase ------------ #
-FROM elixir:1.9-alpine AS builder
+FROM arm32v7/elixir:1.9-alpine AS builder
 
 ENV MIX_ENV=prod \
     LANG=C.UTF-8
@@ -22,9 +22,10 @@ RUN mix deps.compile
 RUN mix release
 
 # -------------- app phase -------------- #
-FROM alpine:3.10 AS app
+FROM arm32v7/alpine:3.10 AS app
 
 ENV LANG=C.UTF-8
+
 RUN apk add --no-cache openssl ncurses
 
 RUN addgroup -S app && adduser -S app -G app
