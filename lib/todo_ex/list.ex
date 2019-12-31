@@ -16,6 +16,8 @@ defmodule TodoEx.List do
     %List{todo_list | entries: new_entries, auto_id: auto_id + 1}
   end
 
+  def entries(%List{entries: entries}, nil), do: entries
+
   def entries(%List{entries: entries}, date) do
     entries
     |> Stream.filter(fn {_, entry} -> entry.date == date end)

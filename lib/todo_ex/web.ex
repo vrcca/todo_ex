@@ -30,7 +30,13 @@ defmodule TodoEx.Web do
   get "/todo/:list_name/entries" do
     conn = fetch_query_params(conn)
     list_name = Map.fetch!(conn.params, "list_name")
-    date = Date.from_iso8601!(Map.fetch!(conn.params, "date"))
+
+    date =
+      Map.get(conn.params, "date")
+      |> case do
+        nil -> nil
+        text -> Date.from_iso8601!(text)
+      end
 
     entries =
       list_name
